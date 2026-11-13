@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AISOC — AI Smart City Operations Center</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#0a0e17;
+    --panel:#101726;
+    --panel-2:#0d1320;
+    --border:#1c2740;
+    --text:#e7ecf5;
+    --muted:#7c8aa6;
+    --traffic:#e8a33d;
+    --safety:#e15656;
+    --utility:#33b7a0;
+    --incident:#9a7cf0;
+    --ok:#39c07a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+    font-family:'IBM Plex Sans',sans-serif;overflow:hidden;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  #app{display:grid;grid-template-rows:56px 1fr 34px;height:100vh;}
+
+  /* ---------- Top bar ---------- */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 18px;border-bottom:1px solid var(--border);background:var(--panel-2);
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .mark{width:26px;height:26px;border-radius:6px;
+    background:linear-gradient(135deg,var(--traffic),var(--incident));
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#0a0e17;}
+  .brand .name{font-weight:600;font-size:15px;letter-spacing:.2px;}
+  .brand .sub{color:var(--muted);font-size:12px;margin-left:6px;}
+  .top-right{display:flex;align-items:center;gap:22px;}
+  .stat{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:baseline;}
+  .stat b{color:var(--text);font-size:13px;font-family:'IBM Plex Mono',monospace;font-weight:600;}
+  .clock{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text);}
+  .pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);
+    box-shadow:0 0 0 0 rgba(57,192,122,.6);animation:pulse 2s infinite;}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(57,192,122,.55);}
+    70%{box-shadow:0 0 0 7px rgba(57,192,122,0);}
+    100%{box-shadow:0 0 0 0 rgba(57,192,122,0);}
+  }
+
+  /* ---------- Layout ---------- */
+  main{display:grid;grid-template-columns:230px 1fr 340px;overflow:hidden;}
+  .col{border-right:1px solid var(--border);overflow-y:auto;}
+  .col:last-child{border-right:none;}
+  .col-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+    padding:14px 16px 8px;}
+
+  /* Left: domain filters + legend */
+  .domain-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;
+    border-left:2px solid transparent;transition:background .15s;}
+  .domain-item:hover{background:rgba(255,255,255,.03);}
+  .domain-item.off{opacity:.35;}
+  .domain-item .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .domain-item .lbl{font-size:13px;flex:1;}
+  .domain-item .cnt{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
+
+  .kpi{margin:6px 16px 14px;padding:12px 13px;background:var(--panel);border:1px solid var(--border);
+    border-radius:8px;}
+  .kpi .v{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;}
+  .kpi .l{font-size:11.5px;color:var(--muted);margin-top:2px;}
+
+  .accuracy-row{display:flex;justify-content:space-between;padding:6px 16px;font-size:12px;color:var(--muted);}
+  .accuracy-row b{color:var(--text);font-family:'IBM Plex Mono',monospace;font-weight:500;}
+
+  /* Center: map */
+  .map-wrap{position:relative;background:radial-gradient(ellipse at 50% 20%, #0e1626 0%, #0a0e17 70%);}
+  svg#city{width:100%;height:100%;display:block;}
+  .node-label{font-family:'IBM Plex Mono',monospace;font-size:9px;fill:var(--muted);}
+  .legend-float{position:absolute;bottom:14px;left:14px;background:rgba(13,19,32,.85);
+    border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--muted);
+    display:flex;gap:14px;backdrop-filter:blur(4px);}
+  .legend-float span{display:flex;align-items:center;gap:6px;}
+  .legend-float i{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+  /* Right: feed + incidents */
+  .tabs{display:flex;border-bottom:1px solid var(--border);}
+  .tab{flex:1;text-align:center;padding:11px 0;font-size:12.5px;color:var(--muted);cursor:pointer;
+    border-bottom:2px solid transparent;}
+  .tab.active{color:var(--text);border-bottom-color:var(--incident);}
+  .tab .n{font-family:'IBM Plex Mono',monospace;margin-left:4px;}
+
+  .feed-item{padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+  .feed-item:hover{background:rgba(255,255,255,.03);}
+  .feed-item .row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .feed-item .tag{font-size:10px;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;
+    border-radius:4px;font-weight:600;}
+  .feed-item .time{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+  .feed-item .desc{font-size:13px;line-height:1.4;}
+  .feed-item .loc{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);margin-top:3px;}
+
+  .tag.traffic{background:rgba(232,163,61,.15);color:var(--traffic);}
+  .tag.safety{background:rgba(225,86,86,.15);color:var(--safety);}
+  .tag.utility{background:rgba(51,183,160,.15);color:var(--utility);}
+  .tag.incident{background:rgba(154,124,240,.18);color:var(--incident);}
+
+  .incident-card{margin:10px 12px;padding:12px;border:1px solid var(--border);border-radius:8px;
+    background:var(--panel);}
+  .incident-card .row1{display:flex;justify-content:space-between;align-items:flex-start;}
+  .incident-card .id{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+  .incident-card .desc{font-size:13.5px;margin:7px 0 8px;line-height:1.4;}
+  .incident-card .sources{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px;}
+  .chip{font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid var(--border);color:var(--muted);}
+  .btn{font-size:12px;padding:6px 12px;border-radius:6px;border:1px solid var(--border);
+    background:var(--panel-2);color:var(--text);cursor:pointer;transition:.15s;}
+  .btn:hover{border-color:var(--incident);color:var(--incident);}
+  .empty{color:var(--muted);font-size:12.5px;padding:24px 16px;text-align:center;}
+
+  /* Bottom ticker */
+  footer{display:flex;align-items:center;gap:8px;padding:0 16px;background:var(--panel-2);
+    border-top:1px solid var(--border);font-size:11.5px;color:var(--muted);overflow:hidden;white-space:nowrap;}
+  footer b{color:var(--text);font-weight:500;}
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:#1c2740;border-radius:4px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="brand">
+      <div class="mark">AI</div>
+      <div class="name">AISOC</div>
+      <div class="sub">Smart City Operations Center — Prototype</div>
+    </div>
+    <div class="top-right">
+      <div class="stat"><span class="pulse-dot"></span> System nominal</div>
+      <div class="stat">Active sensors <b id="sensorCount">—</b></div>
+      <div class="stat">Open incidents <b id="openCount">0</b></div>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT: domains + KPIs -->
+    <div class="col">
+      <div class="col-title">Domains</div>
+      <div class="domain-item" data-domain="traffic"><span class="dot" style="background:var(--traffic)"></span>
+        <span class="lbl">Traffic</span><span class="cnt" id="cnt-traffic">0</span></div>
+      <div class="domain-item" data-domain="safety"><span class="dot" style="background:var(--safety)"></span>
+        <span class="lbl">Public safety</span><span class="cnt" id="cnt-safety">0</span></div>
+      <div class="domain-item" data-domain="utility"><span class="dot" style="background:var(--utility)"></span>
+        <span class="lbl">Utilities</span><span class="cnt" id="cnt-utility">0</span></div>
+
+      <div class="col-title">Model accuracy</div>
+      <div class="accuracy-row"><span>Vehicle/incident vision</span><b>0.88</b></div>
+      <div class="accuracy-row"><span>Utility anomaly (LSTM-AE)</span><b>0.80</b></div>
+      <div class="accuracy-row"><span>Correlation confidence</span><b id="corrConf">0.0</b></div>
+
+      <div class="col-title">Session summary</div>
+      <div class="kpi"><div class="v" id="kpiEvents">0</div><div class="l">Raw events detected</div></div>
+      <div class="kpi"><div class="v" id="kpiReduction">0×</div><div class="l">Alert reduction via correlation</div></div>
+      <div class="kpi"><div class="v" id="kpiLatency">0 s</div><div class="l">Avg detection → alert latency</div></div>
+    </div>
+
+    <!-- CENTER: map -->
+    <div class="col map-wrap">
+      <svg id="city" viewBox="0 0 640 520" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="legend-float">
+        <span><i style="background:var(--traffic)"></i>Traffic</span>
+        <span><i style="background:var(--safety)"></i>Safety</span>
+        <span><i style="background:var(--utility)"></i>Utility</span>
+        <span><i style="background:var(--incident)"></i>Correlated incident</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: feed / incidents -->
+    <div class="col" style="display:flex;flex-direction:column;">
+      <div class="tabs">
+        <div class="tab active" data-tab="incidents">Incidents <span class="n" id="tabIncidentN">(0)</span></div>
+        <div class="tab" data-tab="feed">Raw feed <span class="n" id="tabFeedN">(0)</span></div>
+      </div>
+      <div id="panelIncidents" style="flex:1;overflow-y:auto;"></div>
+      <div id="panelFeed" style="flex:1;overflow-y:auto;display:none;"></div>
+    </div>
+  </main>
+
+  <footer id="ticker">AISOC prototype initializing…</footer>
+</div>
+
+<script>
+/* ===================== Config ===================== */
+const DOMAINS = {
+  traffic: { color:'#e8a33d', label:'Traffic',
+    types:['Signal fault detected','Congestion buildup','Vehicle collision flagged','Illegal turn detected'] },
+  safety: { color:'#e15656', label:'Public safety',
+    types:['Emergency call received','Crowd density alert','Suspicious object flagged','Unauthorized UAV detected'] },
+  utility: { color:'#33b7a0', label:'Utilities',
+    types:['Power load anomaly','Water pressure drop','Grid fault detected','Smart meter outlier'] }
+};
+const ZONES = ['Sector 4 / MG Road','Sector 7 / Ring Rd','Sector 2 / Market St',
+  'Sector 9 / Riverside','Sector 5 / Station Rd','Sector 11 / Industrial Belt','Sector 3 / City Park'];
+
+let nodes = [];      // svg map node positions
+let events = [];     // raw event log
+let incidents = [];  // correlated incidents
+let activeDomains = new Set(['traffic','safety','utility']);
+let eventSeq = 1, incidentSeq = 1;
+
+/* ===================== Build city map (static grid) ===================== */
+const svg = document.getElementById('city');
+function line(x1,y1,x2,y2,opacity=0.35){
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#233252" stroke-width="2" opacity="${opacity}"/>`;
+}
+let roads = '';
+for(let i=1;i<6;i++){ let y=i*80; roads+=line(20,y,620,y); }
+for(let i=1;i<8;i++){ let x=i*80; roads+=line(x,20,x,500); }
+let blocks = '';
+for(let bx=1;bx<7;bx++){
+  for(let by=1;by<5;by++){
+    if(Math.random()<0.72){
+      const x=bx*80+14, y=by*80+14, w=44+Math.random()*10, h=44+Math.random()*10;
+      blocks += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="#101726" stroke="#1c2740" stroke-width="1"/>`;
+    }
+  }
+}
+svg.innerHTML = `<g>${roads}</g><g>${blocks}</g><g id="eventLayer"></g><g id="lineLayer"></g>`;
+
+// intersection nodes usable for events
+for(let bx=1;bx<7;bx++) for(let by=1;by<5;by++) nodes.push({x:bx*80, y:by*80});
+
+/* ===================== Helpers ===================== */
+function fmtTime(d){ return d.toLocaleTimeString('en-GB',{hour12:false}); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function nowShort(){ return fmtTime(new Date()); }
+
+function updateClock(){
+  document.getElementById('clock').textContent = fmtTime(new Date());
+}
+setInterval(updateClock,1000); updateClock();
+
+/* ===================== Map rendering ===================== */
+function drawEventNode(ev){
+  const layer = document.getElementById('eventLayer');
+  const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  c.setAttribute('cx', ev.x); c.setAttribute('cy', ev.y); c.setAttribute('r', 6);
+  c.setAttribute('fill', DOMAINS[ev.domain].color);
+  c.setAttribute('opacity', 0.95);
+  c.setAttribute('id', 'node-'+ev.id);
+  c.style.transition = 'r .3s';
+  c.addEventListener('mouseenter', ()=> c.setAttribute('r',9));
+  c.addEventListener('mouseleave', ()=> c.setAttribute('r',6));
+  layer.appendChild(c);
+
+  const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  ring.setAttribute('cx', ev.x); ring.setAttribute('cy', ev.y); ring.setAttribute('r', 6);
+  ring.setAttribute('fill','none'); ring.setAttribute('stroke', DOMAINS[ev.domain].color);
+  ring.setAttribute('stroke-width','2'); ring.setAttribute('opacity','0.7');
+  ring.innerHTML = `<animate attributeName="r" from="6" to="20" dur="1.6s" begin="0s" repeatCount="3"/>
+                     <animate attributeName="opacity" from="0.6" to="0" dur="1.6s" begin="0s" repeatCount="3"/>`;
+  layer.appendChild(ring);
+  setTimeout(()=> ring.remove(), 5000);
+
+  applyDomainVisibility();
+}
+function drawCorrelationLine(evA, evB, incidentId){
+  const layer = document.getElementById('lineLayer');
+  const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+  l.setAttribute('x1', evA.x); l.setAttribute('y1', evA.y);
+  l.setAttribute('x2', evB.x); l.setAttribute('y2', evB.y);
+  l.setAttribute('stroke', '#9a7cf0'); l.setAttribute('stroke-width','2');
+  l.setAttribute('stroke-dasharray','4 3'); l.setAttribute('opacity','0.85');
+  l.setAttribute('id','corrline-'+incidentId);
+  layer.appendChild(l);
+
+  [evA,evB].forEach(ev=>{
+    const halo = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    halo.setAttribute('cx', ev.x); halo.setAttribute('cy', ev.y); halo.setAttribute('r', 11);
+    halo.setAttribute('fill','none'); halo.setAttribute('stroke','#9a7cf0'); halo.setAttribute('stroke-width','2');
+    halo.setAttribute('class','haloring');
+    document.getElementById('eventLayer').appendChild(halo);
+  });
+}
+function applyDomainVisibility(){
+  events.forEach(ev=>{
+    const node = document.getElementById('node-'+ev.id);
+    if(node) node.style.display = activeDomains.has(ev.domain) ? '' : 'none';
+  });
+}
+
+/* ===================== Event generation ===================== */
+function generateEvent(){
+  const domainKey = pick(Object.keys(DOMAINS));
+  const domain = DOMAINS[domainKey];
+  const node = pick(nodes);
+  const jitter = ()=> (Math.random()*30-15);
+  const ev = {
+    id: eventSeq++,
+    domain: domainKey,
+    type: pick(domain.types),
+    zone: pick(ZONES),
+    time: new Date(),
+    x: node.x + jitter(), y: node.y + jitter(),
+    severity: pick(['Low','Medium','High'])
+  };
+  events.unshift(ev);
+  drawEventNode(ev);
+  renderFeed();
+  updateCounters();
+  pushTicker(`${nowShort()} — [${domain.label}] ${ev.type} · ${ev.zone}`);
+  maybeCorrelate(ev);
+}
+
+function maybeCorrelate(newEv){
+  // look for a recent (last 12s), different-domain, spatially-close event to correlate
+  const candidates = events.filter(e =>
+    e.id !== newEv.id &&
+    e.domain !== newEv.domain &&
+    !e._used &&
+    (newEv.time - e.time) < 12000 &&
+    Math.hypot(e.x-newEv.x, e.y-newEv.y) < 130
+  );
+  if(candidates.length && Math.random() < 0.65){
+    const other = candidates[0];
+    newEv._used = true; other._used = true;
+    const incident = {
+      id: 'INC-' + String(incidentSeq++).padStart(3,'0'),
+      sources: [other, newEv],
+      time: new Date(),
+      zone: newEv.zone,
+      severity: (newEv.severity==='High'||other.severity==='High') ? 'High' :
+                (newEv.severity==='Medium'||other.severity==='Medium') ? 'Medium' : 'Low',
+      confidence: (0.72 + Math.random()*0.23).toFixed(2),
+      desc: `${DOMAINS[other.domain].label} + ${DOMAINS[newEv.domain].label} events correlated near ${newEv.zone}`,
+      status: 'open'
+    };
+    incidents.unshift(incident);
+    drawCorrelationLine(other, newEv, incident.id);
+    renderIncidents();
+    updateCounters();
+    pushTicker(`⚠ ${incident.id} opened — cross-domain correlation (${DOMAINS[other.domain].label} × ${DOMAINS[newEv.domain].label})`);
+    document.getElementById('corrConf').textContent = incident.confidence;
+  }
+}
+
+/* ===================== Rendering: feed & incidents ===================== */
+function renderFeed(){
+  const el = document.getElementById('panelFeed');
+  el.innerHTML = events.slice(0,40).map(ev => `
+    <div class="feed-item">
+      <div class="row1">
+        <span class="tag ${ev.domain}">${DOMAINS[ev.domain].label}</span>
+        <span class="time">${fmtTime(ev.time)}</span>
+      </div>
+      <div class="desc">${ev.type}</div>
+      <div class="loc">${ev.zone} · SEV-${ev.severity.toUpperCase()} · EVT-${String(ev.id).padStart(4,'0')}</div>
+    </div>`).join('');
+  document.getElementById('tabFeedN').textContent = `(${events.length})`;
+}
+
+function renderIncidents(){
+  const el = document.getElementById('panelIncidents');
+  const open = incidents.filter(i=>i.status==='open');
+  document.getElementById('tabIncidentN').textContent = `(${open.length})`;
+  document.getElementById('openCount').textContent = open.length;
+  if(!incidents.length){
+    el.innerHTML = `<div class="empty">No correlated incidents yet.<br>Watch the map — related events across domains will merge automatically.</div>`;
+    return;
+  }
+  el.innerHTML = incidents.map(inc => `
+    <div class="incident-card" style="${inc.status==='resolved' ? 'opacity:.45' : ''}">
+      <div class="row1">
+        <span class="id">${inc.id} · ${fmtTime(inc.time)}</span>
+        <span class="tag incident">${inc.severity}</span>
+      </div>
+      <div class="desc">${inc.desc}</div>
+      <div class="sources">
+        ${inc.sources.map(s=>`<span class="chip">${DOMAINS[s.domain].label}: ${s.type}</span>`).join('')}
+        <span class="chip">Confidence ${inc.confidence}</span>
+      </div>
+      ${inc.status==='open'
+        ? `<button class="btn" onclick="resolveIncident('${inc.id}')">Acknowledge & resolve</button>`
+        : `<span style="font-size:11px;color:var(--muted)">Resolved</span>`}
+    </div>`).join('');
+}
+function resolveIncident(id){
+  const inc = incidents.find(i=>i.id===id);
+  if(inc){ inc.status='resolved'; renderIncidents(); pushTicker(`✓ ${id} acknowledged and resolved by operator`); }
+}
+window.resolveIncident = resolveIncident;
+
+/* ===================== Counters / ticker ===================== */
+function updateCounters(){
+  ['traffic','safety','utility'].forEach(d=>{
+    document.getElementById('cnt-'+d).textContent = events.filter(e=>e.domain===d).length;
+  });
+  document.getElementById('kpiEvents').textContent = events.length;
+  const openTickets = events.length - incidents.length; // naive stand-in
+  const reduction = incidents.length ? (events.length / Math.max(1,(events.length - incidents.length))).toFixed(1) : '1.0';
+  document.getElementById('kpiReduction').textContent = reduction + '×';
+  document.getElementById('kpiLatency').textContent = (1.2 + Math.random()*1.4).toFixed(1) + ' s';
+  document.getElementById('sensorCount').textContent = 128 + events.length;
+}
+let tickerItems = [];
+function pushTicker(msg){
+  tickerItems.unshift(msg);
+  tickerItems = tickerItems.slice(0,6);
+  document.getElementById('ticker').innerHTML = tickerItems.map(t=>`<b>•</b> ${t}`).join('&nbsp;&nbsp;&nbsp;');
+}
+
+/* ===================== UI wiring ===================== */
+document.querySelectorAll('.domain-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    const d = item.dataset.domain;
+    if(activeDomains.has(d)){ activeDomains.delete(d); item.classList.add('off'); }
+    else { activeDomains.add(d); item.classList.remove('off'); }
+    applyDomainVisibility();
+    renderFeed();
+  });
+});
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const which = tab.dataset.tab;
+    document.getElementById('panelIncidents').style.display = which==='incidents' ? '' : 'none';
+    document.getElementById('panelFeed').style.display = which==='feed' ? '' : 'none';
+  });
+});
+
+/* ===================== Boot ===================== */
+renderIncidents();
+renderFeed();
+updateCounters();
+pushTicker('AISOC prototype online — simulating live sensor feed across traffic, safety and utility domains.');
+
+// seed a few events immediately, then keep generating
+for(let i=0;i<3;i++) setTimeout(generateEvent, i*450);
+setInterval(generateEvent, 2600);
+</script>
+</body>
+</html>
