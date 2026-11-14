@@ -1,35 +1,59 @@
 # AI Smart City Operations Center (AISOC)
 
-A front-end prototype of an AI-assisted Smart City Operations Center dashboard. It demonstrates how traffic, public-safety, and utility events could be monitored in one interface and how nearby cross-domain events could be grouped into incidents.
+**An AI-assisted Smart City Operations Center Dashboard Prototype**
 
-> **Prototype notice:** This repository currently contains a browser-based simulation, not a production AI system. Events, sensor counts, confidence values, and map locations are generated or represented in the front end. There is no live sensor integration, trained machine-learning model, backend API, database, authentication, or real emergency dispatch.
+AISOC is a browser-based dashboard prototype that demonstrates how traffic, public safety, and utility events can be monitored through a unified Smart City Operations Center interface.
 
-## Features demonstrated
+The prototype simulates event monitoring, cross-domain event correlation, and incident management through an interactive dashboard.
 
-- Dark operations-dashboard interface
-- Traffic, public-safety, and utility event categories
-- Simulated event feed with timestamps and severity labels
-- Generated city-grid map with event markers
-- Basic cross-domain event correlation using time and map-distance conditions
-- Incident list with an acknowledge/resolve interaction
-- Domain filters, KPI counters, and a scrolling activity ticker
+> **Prototype Notice:** This is a front-end simulation, not a production AI system. Events, sensor counts, confidence values, and map locations are generated or represented in JavaScript. No live sensor integration, trained machine-learning model, backend API, database, authentication, or real emergency dispatch is currently implemented.
 
-## Run locally
+## Live Demo
 
-No build step is required.
+[**Open AISOC Dashboard**](https://arunatamilarasu58-cpu.github.io/AI-Smart-City-Operations-Center/)
 
-1. Download or clone this repository.
-2. Open `index.html` in a modern web browser.
+## Features
 
-Optional: run a local static server from the repository folder:
+- Dark-themed operations dashboard
+- Traffic, public safety, and utility event monitoring
+- Simulated real-time event feed with timestamps and severity levels
+- Generated city-grid visualization with event markers
+- Rule-based cross-domain event correlation
+- Incident management with acknowledge and resolve actions
+- Interactive domain filters
+- KPI counters and activity ticker
+
+## Technologies Used
+
+- HTML5
+- CSS3
+- JavaScript
+- SVG for city-map visualization
+- Git and GitHub
+- GitHub Pages for deployment
+
+## Run Locally
+
+No build tools or installation are required.
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/arunatamilarasu58-cpu/AI-Smart-City-Operations-Center.git
+   ```
+
+2. Open the project folder.
+3. Open `index.html` in a modern web browser.
+
+Alternatively, start a local server:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then open `http://localhost:8000`.
+Open `http://localhost:8000` in your browser.
 
-## Project structure
+## Project Structure
 
 ```text
 AI-Smart-City-Operations-Center/
@@ -40,36 +64,39 @@ AI-Smart-City-Operations-Center/
 ├── docs/
 │   └── PROJECT_OVERVIEW.md
 └── screenshots/
-    └── .gitkeep
 ```
 
 ## Screenshots
 
-Add genuine screenshots of the running prototype to the `screenshots/` folder. Suggested filenames:
+Screenshots of the running prototype will be added here.
 
-- `dashboard.png` - full dashboard view
-- `incident-feed.png` - incident panel and raw event feed
+- `screenshots/dashboard.png`
+- `screenshots/incident-feed.png`
 
-Do not use placeholder images as evidence of working features.
+## Current Limitations
 
-## Current limitations
+- Events are randomly generated using JavaScript.
+- The city map is a schematic visualization, not a real geographic map.
+- Displayed model-accuracy values are illustrative and not measured evaluation results.
+- Event correlation uses basic time and distance rules, not a trained AI model.
+- Data is not persisted after refreshing the browser.
+- Google Fonts requires an internet connection to load the selected fonts.
 
-- The event stream is randomly simulated in JavaScript.
-- The city map is a generated schematic grid, not a geographic map.
-- The displayed model-accuracy values are illustrative static values, not measured evaluation results.
-- The correlation logic is a simple rule-based demonstration, not a trained AI model.
-- Data is not persisted after refreshing the page.
-- The page imports Google Fonts from an external service, so the font may fall back if offline.
+## Future Enhancements
 
-## Future improvements
-
-- Connect real or mock sensor APIs through a backend
-- Store events and incidents in a database
-- Add authenticated operator roles and audit history
-- Replace the schematic map with a geographic map
-- Evaluate and document actual ML models with datasets and metrics
-- Add automated tests, accessibility checks, and responsive layouts
+- Integrate real or simulated sensor APIs through a backend.
+- Store events and incidents in a database.
+- Implement operator authentication and role-based access.
+- Integrate a geographic map.
+- Train and evaluate machine-learning models using real datasets.
+- Add automated tests and responsive layouts.
 
 ## License
 
-See [LICENSE](LICENSE).
+See the [LICENSE](LICENSE) file for license information.
+
+## Author
+
+**Arun Tamilarasu**
+
+GitHub: [@arunatamilarasu58-cpu](https://github.com/arunatamilarasu58-cpu)
