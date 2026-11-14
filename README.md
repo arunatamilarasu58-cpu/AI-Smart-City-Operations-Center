@@ -68,10 +68,9 @@ AI-Smart-City-Operations-Center/
 
 ## Screenshots
 
-Screenshots of the running prototype will be added here.
+### Dashboard
 
-- `screenshots/dashboard.png`
-- `screenshots/incident-feed.png`
+![AI Smart City Operations Center Dashboard](screenshots/dashboard.png)
 
 ## Current Limitations
 
